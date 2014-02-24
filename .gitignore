@@ -1,0 +1,31 @@
+*~
+*#*
+
+# CABAL
+/dist
+/cabal-dev
+/.cabal-sandbox
+/cabal.sandbox.config
+
+# Haskell Program Coverage
+/.hpc
+
+# Leksah
+*.lkshs
+
+# Intellij IDEA
+/.idea/workspace.xml
+/.idea/ant.xml
+
+# darcs
+/_darcs
+
+# ctags
+TAGS
+
+# sbt
+/project
+/target
+
+*.swp
+
