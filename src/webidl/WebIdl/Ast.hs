@@ -4,8 +4,15 @@ import WebIdl.Lex
 
 data Ident = Ident String  deriving (Show, Eq)
 
+data ExtendedAttributes = 
+    NoInterfaceObject
+    | OtherEA String
+      deriving (Show, Eq, Read)
+
 -- | Extended Attribute
-data ExtendedAtt = ExtendedAtt [String] deriving (Show, Eq)
+data ExtendedAtt = 
+    ExtendedAtt [ExtendedAttributes]
+      deriving (Show, Eq)
 
 data Nullable = Nullable Bool  deriving (Show, Eq)
 data Array    = Array Bool     deriving (Show, Eq)
@@ -49,7 +56,9 @@ data Definition =
     Interface Ident InheritsFrom [IMember] ExtendedAtt
     | Callback Ident CallbackDef ExtendedAtt
     | Dictionary Ident InheritsFrom [DictAttribute] ExtendedAtt  
-    | TypeDef Ident Type ExtendedAtt deriving (Show,Eq)
+    | TypeDef Ident Type ExtendedAtt 
+    | Implements Ident Ident ExtendedAtt 
+      deriving (Show,Eq)
 
 data Definitions = Definitions [Definition]
 

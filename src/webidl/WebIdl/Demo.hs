@@ -20,6 +20,9 @@ pprintFile filename =  do
 pprintWebGl :: IO String
 pprintWebGl = pprintFile "idl/webgl.idl"
 
+pprintGeoL :: IO String
+pprintGeoL = pprintFile "idl/geolocation.idl"
+
 printAudio :: IO ()
 printAudio =  do
     input <- readFile "idl/audio/audiocontext.webidl"

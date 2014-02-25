@@ -45,3 +45,14 @@ runFile :: Show a => Parser a -> String -> IO ()
 runFile p fname = do
     input <- readFile fname
     run p input
+
+maybeRead ::
+  Read a =>
+  String
+  -> Maybe a
+maybeRead s =
+  case reads s of
+    [] -> Nothing
+    ((a, _):_) -> Just a   
+
+     

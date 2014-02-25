@@ -8,7 +8,7 @@ import WebIdl.Helper
 -- import GHC.Exts(sortWith)
 import Data.Traversable
 import Control.Applicative((<$>), liftA2)
--- import Data.Maybe(fromMaybe)
+import Data.Maybe(fromMaybe)
 
 import Text.Parsec.Char
 import Text.Parsec.Combinator
@@ -37,9 +37,18 @@ webIdl =
                 interface 
                 <|> callback 
                 <|> typeDef 
-                <|> dictionary) <?> "Top level defitinion"
+                <|> dictionary
+                <|> implements) <?> "Top level defitinion"
     in WebIdl <$> process
 
+implements :: Parser Definition
+implements = do
+    eatt <- extendedAtt
+    i0 <- identifier
+    stringTok "implements"
+    i1 <- identifier
+    endl
+    return $ Implements i0 i1 eatt
 
 {- | 
 >>> run interface "[Constructor]\n interface SELF : SUPER {}"
@@ -136,9 +145,8 @@ operation = do
     endl
     return (Operation ident typ args eatt) <?> "operation"
 
-
 formalArgs :: Parser [FormalArg]
-formalArgs = inParens $ sepBy formalArg $ charTok ','
+formalArgs = (inParens $ sepBy formalArg $ charTok ',') <?> "argument list"
     
 {- |
 >>> run formalArg "AudioBuffer decodedData"
@@ -155,7 +163,7 @@ formalArg = do
     typ <- parseType <?> "type of formal argument"
     i <- identifier <?> "identifier of formal argument"
     df <- (id =<< ) <$> const (optionMaybe $ charTok '=' >>> value) `traverse` opt
-    return $ FormalArg i typ (Optional $ justTrue opt) df eatt
+    return (FormalArg i typ (Optional $ justTrue opt) df eatt) <?> "argument"
 
 {- |
 >>> run attribute "readonly attribute TYPE NAME;"
@@ -169,10 +177,10 @@ attribute = do
     inherit <- optionMaybe $ stringTok "inherit"
     readonly <- optionMaybe $ stringTok "readonly"
     stringTok "attribute"
-    i <- identifier
     typ <- parseType
+    i <- identifier
     endl
-    return $ Attribute i typ ((ReadOnly . justTrue) readonly) ((Inherit . justTrue) inherit) eatt
+    return (Attribute i typ ((ReadOnly . justTrue) readonly) ((Inherit . justTrue) inherit) eatt) <?> "attribute"
 
 getter :: Parser IMember
 getter = special1 "getter" Getter
@@ -209,7 +217,18 @@ special2 tok cons = do
 extendedAtt :: Parser ExtendedAtt
 extendedAtt = -- TODO: skipWhites is really needed here? should it be before or after `option`?
     ExtendedAtt <$> 
-      option [] (skipWhites $ inBrackets $ sepBy (many $ noneOf ",]") (charTok ',')) 
+      option [] (skipWhites $ inBrackets $ sepBy extendedAttributes $ charTok ',') 
+
+extendedAttributes :: Parser ExtendedAttributes
+extendedAttributes = 
+    either OtherEA id <$> readableOr
+     
+
+readableOr :: Parser (Either String ExtendedAttributes) 
+readableOr = do
+    chs <- many (noneOf ",]")
+    -- TODO this chs repetition seems to be ask for an Applicative...
+    return $ fromMaybe (Left chs) (Right <$> maybeRead chs)
 
 {- |
 >>> run constVal "const TYPE NAME = 0x0000;"

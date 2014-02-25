@@ -31,6 +31,8 @@ instance PrettyPrint Definition where
         ++ printMembers members
     pprint (TypeDef id' typ _) = 
         "typdef " ++ pprint id' ++ " = " ++ pprint typ
+    pprint (Implements id0 id1 ext) = 
+        pprint id0 ++ " implements " ++ pprint id1
 
 instance PrettyPrint Ident where
     pprint (Ident id') = id'
@@ -67,8 +69,8 @@ instance PrettyPrint IMember where
 
 instance PrettyPrint FormalArg where
     pprint (FormalArg id' typ (Optional opt) default' ext) = 
-        if opt then "optional " else ""
-        ++ pprint typ ++ " "
+        (if opt then "optional " else "")
+        ++ (pprint typ ++ " ")
         ++ pprint id'
         ++ pprint default'
 
