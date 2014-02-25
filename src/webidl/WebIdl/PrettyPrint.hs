@@ -1,10 +1,11 @@
+{-# OPTIONS_GHC -fno-warn-unused-binds -fno-warn-unused-matches #-}
 {-# LANGUAGE TypeSynonymInstances, FlexibleInstances #-}
+{- TODO temporary while not everything is handled -}
 
 module WebIdl.PrettyPrint where
 
 import WebIdl.Ast
-import WebIdl.Lex
-import WebIdl.Helper
+import WebIdl.Lex()
 
 import Control.Applicative((<$>))
 import Data.List(intercalate)

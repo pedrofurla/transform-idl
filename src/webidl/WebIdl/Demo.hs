@@ -6,23 +6,26 @@ import WebIdl.Helper
 import WebIdl.Parser
 import WebIdl.PrettyPrint
 
-import Text.Parsec.Prim
--- import Text.Parsec.String
+import Text.Parsec.Prim()
 
-main :: IO ()
-main =  do
-    input <- readFile "idl/webgl.idl"
-    putStrLn $ 
+pprintFile :: String -> IO String
+pprintFile filename =  do
+    input <- readFile filename
+    return $ 
       case (runWith pprint webIdl input) of
           Left x -> "Error: " ++ show x
           Right x -> x
     
 
-main2 :: IO ()
-main2 =  do
+pprintWebGl :: IO String
+pprintWebGl = pprintFile "idl/webgl.idl"
+
+printAudio :: IO ()
+printAudio =  do
     input <- readFile "idl/audio/audiocontext.webidl"
     run webIdl input    
 
+test :: IO ()
 test = do
     run operation "RET OP(T1 ARG1, T2 ARG2, T3 ARG3);"
     run operation "RET OP(T1 ARG1, /* */ T2 ARG2, T3 ARG3);"

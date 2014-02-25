@@ -7,7 +7,7 @@ import WebIdl.Helper
 
 -- import GHC.Exts(sortWith)
 import Data.Traversable
-import Control.Applicative((<$>), (<*>), liftA2)
+import Control.Applicative((<$>), liftA2)
 -- import Data.Maybe(fromMaybe)
 
 import Text.Parsec.Char
@@ -190,9 +190,9 @@ setter = special2 "setter" Setter
 creator :: Parser IMember
 creator = special2 "creator" Creator
 
-    
+special1 :: String -> (Maybe Ident -> Type -> FormalArg -> b) -> Parser b
 special1 tok cons = do
-    eatt <- extendedAtt
+    _eatt <- extendedAtt
     stringTok tok
     typ <- parseType
     i   <- optionMaybe identifier
@@ -200,8 +200,9 @@ special1 tok cons = do
     endl
     return $ cons i typ arg
 
+special2 :: String -> (Maybe Ident -> Type -> FormalArg -> FormalArg -> b) -> Parser b
 special2 tok cons = do
-    eatt <- extendedAtt
+    _eatt <- extendedAtt
     stringTok tok
     typ <- parseType
     i   <- optionMaybe identifier
