@@ -1,4 +1,3 @@
-
 An hand-written [WebIdl](http://www.w3.org/TR/WebIDL/) parser - using [Parsec3](http://hackage.haskell.org/package/parsec3).
 
 The purpose of this project is to one day provide tools to transform WebIdl (maybe OMG's idl too?) into bindings/stubs for [altjs](altjs.org) languages. My main targets are Haskell based ones (like [Fay](http://fay-lang.org) and [PureScript](http://purescript.readthedocs.org/)) and [ScalaJs](http://www.scala-js.org/).
@@ -16,3 +15,5 @@ Many parts of WebIdl are still not implemented:
  * Basically, currently only a subset of WebIdl commom to Web Audio and WebGL is implemented.
 
 There are still *many* opportunities for abstractions/code-reuse that were simply ignored - check Parser.hs, Ast.hs and PrettyPrint.hs and you will see what I mean.
+
+Special thanks to [Tony Morris](http://blog.tmorris.net/) and [Mark Hibberd](https://twitter.com/markhibberd) which made this possible through their wonderful [FP Course](https://github.com/NICTA/course). Thank you guys, you are the best! And thanks NICTA for allowing they create such a wonderfull course.
