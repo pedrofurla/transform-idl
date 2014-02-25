@@ -1,3 +1,5 @@
+/* Copy and pasted portions from http://www.w3.org/TR/2013/REC-geolocation-API-20131024/ */
+
  [NoInterfaceObject]
  interface NavigatorGeolocation {
    readonly attribute Geolocation geolocation;
