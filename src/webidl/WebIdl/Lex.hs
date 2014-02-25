@@ -6,6 +6,7 @@ import WebIdl.Helper
 import GHC.Exts(sortWith)
 -- import Data.Traversable
 import Control.Applicative((<$>))
+import Control.Monad(liftM)
 -- import Data.Maybe(fromMaybe)
 
 import Text.Parsec.Char
@@ -32,7 +33,7 @@ argKeywords =
      "setter", "static", "stringifier", "typedef", "unrestricted"]
 
 keywords :: [String]
-keywords =  (concat $ words <$> cTypes) ++ argKeywords 
+keywords =  concat (words <$> cTypes) ++ argKeywords 
 
 isKeyword :: String -> Bool
 isKeyword = (`elem` keywords)
@@ -41,7 +42,6 @@ identTok :: Parser String
 identTok = skipWhites $ do
     x <- letter <|> char '_'
     xs <-  many $ letter <|> char '_' <|> digit
-    
     -- TODO: relexing reserved keyword checking, it's conflicting with types (which are also identfiers)
     -- let i = x : xs
     -- if isKeyword i then parserFail $ "`"++i++"` is a reserved word"
@@ -49,7 +49,7 @@ identTok = skipWhites $ do
     return $ x : xs
 
 parseCTypes :: Parser String
-parseCTypes = skipWhites $ choice $ (try . string) <$> (sortWith ((100-) . length) cTypes)
+parseCTypes = skipWhites $ choice $ (try . string) <$> sortWith ((100-) . length) cTypes
 
 data Literal = 
       Number String
@@ -64,8 +64,8 @@ stringLit :: Parser Literal
 stringLit = 
     let escaped = (>>>) $ char '\\' 
         escControl = escaped $ oneOf "tnr\\"
-        ch = satisfy (not . (flip elem) ['"','\\']) in
-    Str <$> between (char '"') (charTok '"') (many $ (escControl <|> ch)) 
+        ch = satisfy (not . flip elem "\"\\") in
+    Str <$> between (char '"') (charTok '"') (many (escControl <|> ch)) 
 
 numberLit :: Parser Literal
 numberLit = do
@@ -74,7 +74,7 @@ numberLit = do
     return $ Number $ ls ++ rs
     
 hexLit :: Parser Literal
-hexLit = string "0x" >>> (many1 hexDigit) >>= (return . Hex)
+hexLit = liftM Hex (string "0x" >>> many1 hexDigit)
 
 boolLit :: Parser Literal
 boolLit = Boolean <$> (string "true" <|> string "false")
@@ -89,7 +89,7 @@ inBrackets :: Parser a -> Parser a
 inBrackets = betweenTok (char '[') (char ']')
 
 betweenTok :: Parser open -> Parser close -> Parser a -> Parser a
-betweenTok o c a = between (skipWhites o) (skipWhites c) a
+betweenTok o c = between (skipWhites o) (skipWhites c)
 
 charTok :: Char -> Parser Char
 charTok = skipWhites . char
@@ -97,32 +97,27 @@ charTok = skipWhites . char
 stringTok :: String -> Parser String
 stringTok = skipWhites . string
 
-word :: Parser String
-word = skipWhites $ do
-    x <- letter <|> char '_'
-    xs <-  many $ letter <|> char '_' <|> digit
-    return $ x : xs
-
 -- | Reads a sequence of any non-visible " \t\n\r" characteres and comments
 whites :: Parser ()
 whites = do
     invisibles
     option () (lineComment >>> whites)
     option () (blockComment >>> whites)
-    (return ()) <?> "Ignored lexemes"
+    return () <?> "Ignored lexemes"
 
 eol :: Parser Char
-eol = (char '\n') <|> (char '\r' >>> char '\n')
+eol = char '\n' <|> (char '\r' >>> char '\n')
 
 invisibles :: Parser ()
-invisibles = (skipMany $ oneOf " \t" <|> eol)
+invisibles = skipMany $ oneOf " \t" <|> eol
 
 lineComment :: Parser ()
-lineComment = (try $ string "//") >>> (const () <$> (manyTill anyChar $ try $ eol))
+lineComment = 
+    try (string "//") >>> (const () <$> manyTill anyChar (try eol))
 
-blockComment :: Parser () -- (noneOf "*" >>> noneOf "/")
-blockComment = 
-    const () <$> ( (try $ string "/*") >>> (manyTill anyChar $ try $ string "*/"))
+blockComment :: Parser ()
+blockComment = -- TODO try $ string "/*" will have the same meaning regarding >>>?
+    const () <$> try (string "/*") >>> manyTill anyChar (try $ string "*/")
 
 comments :: Parser ()
 comments = skipMany $ (lineComment <|> blockComment) >>> whites
@@ -139,6 +134,6 @@ endl = do
     skipWhites $ char ';'
     --skipMany (lineComment >>> whites)
     whites
-    (return ()) <?> "End of line marker ';'"
+    return () <?> "End of line marker ';'"
 
 

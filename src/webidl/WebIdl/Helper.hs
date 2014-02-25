@@ -29,7 +29,7 @@ justTrue m = False `fromMaybe` (const True <$> m)
 
 run :: Show a => Parser a -> String -> IO ()
 run p input
-        = case (parse p "" input) of
+        = case parse p "" input of
             Left err -> do{ putStr "parse error at "
                           ; print err
                           }
@@ -37,7 +37,7 @@ run p input
 
 runWith :: (Show a, Show b) => (a -> b) -> Parser a -> String -> Either ParseError b
 runWith f p input
-        = case (parse p "" input) of
+        = case parse p "" input of
             Left err -> Left err
             Right a  -> Right $ f a
 

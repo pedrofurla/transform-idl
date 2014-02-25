@@ -33,10 +33,11 @@ webIdl =
         process :: Parser [Definition]
         process = do 
             whites
-            --skipMany (try $ lineComment >>> whites)
-            defs <- many (interface <|> callback <|> typeDef <|> dictionary) <?> "Top level defitinion"
-            --(defs ++) <$> process
-            return defs
+            many ( 
+                interface 
+                <|> callback 
+                <|> typeDef 
+                <|> dictionary) <?> "Top level defitinion"
     in WebIdl <$> process
 
 
@@ -64,7 +65,7 @@ interface = do
             <|> try creator
             <|> try deleter)
     endl
-    (return $ Interface i inherits members eatt) <?> "Interface definition"
+    return (Interface i inherits members eatt) <?> "Interface definition"
 
 {- |
     TODO: any thing after ":" can be a type parsed by "parseType", this is wrong. 
@@ -72,8 +73,7 @@ interface = do
 inheriting :: Parser (Maybe Type)
 inheriting = do 
         optional $ charTok ':'
-        typ <- optionMaybe parseType
-        return typ
+        optionMaybe parseType
 
 {- |
 >>> run typeDef "typedef unsigned long  GLenum;"
@@ -86,7 +86,7 @@ typeDef = do
     typ <- parseType
     i <- identifier
     endl
-    (return $ TypeDef i typ eatt) <?> "typedef definition"
+    return (TypeDef i typ eatt) <?> "typedef definition"
 
 {- | 
 >>> run callback "callback DecodeSuccessCallback = void (AudioBuffer decodedData);"
@@ -101,7 +101,7 @@ callback = do
     typ <- parseType
     args <- formalArgs
     endl
-    (return $ Callback ident (CallbackDef typ args) eatt) <?> "callback definition"
+    return (Callback ident (CallbackDef typ args) eatt) <?> "callback definition"
 
 dictionary :: Parser Definition
 dictionary = do
@@ -111,7 +111,7 @@ dictionary = do
     inherits <- inheriting
     members <- inBraces $ many dictAttribute
     endl
-    (return $ Dictionary ident inherits members eatt) <?> "dictionary def"
+    return (Dictionary ident inherits members eatt) <?> "dictionary def"
 
 dictAttribute :: Parser DictAttribute
 dictAttribute = do
@@ -120,7 +120,7 @@ dictAttribute = do
     i <- identifier
     lit <- optionMaybe (charTok '=' >>> value)
     endl
-    return $ DictAttribute i typ lit eatt
+    return (DictAttribute i typ lit eatt) <?> "dictionary attribute"
 
 
 {- |
@@ -134,14 +134,12 @@ operation = do
     ident <- identifier
     args <- formalArgs
     endl
-    return $ Operation ident typ args eatt
+    return (Operation ident typ args eatt) <?> "operation"
 
 
 formalArgs :: Parser [FormalArg]
-formalArgs = do 
-    args <- inParens $ sepBy formalArg $ charTok ','
-    return args
-
+formalArgs = inParens $ sepBy formalArg $ charTok ','
+    
 {- |
 >>> run formalArg "AudioBuffer decodedData"
 FormalArg "AudioBuffer" "decodedData" Nothing
@@ -156,9 +154,7 @@ formalArg = do
     opt <- optionMaybe $ stringTok "optional" --  opt :: Maybe String
     typ <- parseType <?> "type of formal argument"
     i <- identifier <?> "identifier of formal argument"
-    --let deflt = traverse (\_ -> do try $ charTok '='; val <- value; return val) opt
-    --df <- deflt <?> "default value"
-    df <- (id =<< ) <$> (const $ (optionMaybe $ charTok '=' >>> value)) `traverse` opt
+    df <- (id =<< ) <$> const (optionMaybe $ charTok '=' >>> value) `traverse` opt
     return $ FormalArg i typ (Optional $ justTrue opt) df eatt
 
 {- |
@@ -206,14 +202,14 @@ special2 tok cons = do
     stringTok tok
     typ <- parseType
     i   <- optionMaybe identifier
-    (arg0, arg1) <- inParens $ (liftA2 (,)) formalArg  formalArg
+    (arg0, arg1) <- inParens $ liftA2 (,) formalArg  formalArg
     endl
     return $ cons i typ arg0 arg1
 
 extendedAtt :: Parser ExtendedAtt
 extendedAtt = -- TODO: skipWhites is really needed here? should it be before or after `option`?
     ExtendedAtt <$> 
-    (option [] $ skipWhites $ inBrackets $ sepBy (many $ noneOf ",]") (charTok ',')) 
+      option [] (skipWhites $ inBrackets $ sepBy (many $ noneOf ",]") (charTok ',')) 
 
 {- |
 >>> run constVal "const TYPE NAME = 0x0000;"
@@ -228,7 +224,7 @@ constVal = do
     charTok '='
     lit <- value
     endl
-    (return $ Const i typ lit eatt) <?> "const definition"
+    return (Const i typ lit eatt) <?> "const definition"
 
 
 {- TODO 
@@ -248,12 +244,13 @@ parseType = do
     -- also, T itself can be/have "[]" "?", this is also currently ignored
     sequ <- optionMaybe $ try $ stringTok "sequence<" -- :: Parser Maybe String
     i <- (Ident <$> try parseCTypes) <|> identifier 
-    (const $ stringTok ">") `traverse` sequ
+    const (stringTok ">") `traverse` sequ
     array <- optionMaybe $ string "[]"
     nullable <- optionMaybe $ char '?'
     whites
-    (return $ 
-        Type i ((Nullable . justTrue) nullable) ((Array . justTrue) array) ((Sequence . justTrue) sequ)) <?> "type declaration"
+    return 
+        (Type i 
+          ((Nullable . justTrue) nullable) ((Array . justTrue) array) ((Sequence . justTrue) sequ)) <?> "type declaration"
 
 identifier :: Parser Ident
 identifier = Ident <$> (identTok <?> "identifier")

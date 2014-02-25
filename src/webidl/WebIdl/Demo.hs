@@ -12,7 +12,7 @@ pprintFile :: String -> IO String
 pprintFile filename =  do
     input <- readFile filename
     return $ 
-      case (runWith pprint webIdl input) of
+      case runWith pprint webIdl input of
           Left x -> "Error: " ++ show x
           Right x -> x
     

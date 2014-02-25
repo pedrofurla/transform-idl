@@ -59,7 +59,7 @@ instance PrettyPrint IMember where
     pprint (Operation id' typ args ext) = 
         pprint typ ++ " "
         ++ pprint id' ++ "("
-        ++ (intercalate ", " $ pprint <$> args)  ++")"
+        ++ intercalate ", " (pprint <$> args) ++ ")"
     pprint (Getter mid typ arg)        = error "TODO"
     pprint (Setter mid typ arg0 arg1)  = error "TODO"
     pprint (Deleter mid typ arg)       = error "TODO"
@@ -85,7 +85,7 @@ sep :: String
 sep = "\t"
 
 sepped :: String -> String
-sepped = ("\t"++) . ((\x -> if(x=='\n') then "\n\t" else [x]) =<<) 
+sepped = ("\t"++) . ((\x -> if x=='\n' then "\n\t" else [x]) =<<) 
 
 emptyIf :: Bool -> String -> String
 emptyIf b s = if b then "" else s
@@ -93,4 +93,4 @@ emptyIf b s = if b then "" else s
 printMembers :: PrettyPrint m => [m] -> String
 printMembers members = 
     (if null members then "" else "\n") 
-    ++ (intercalate "\n" $ sepped . pprint <$> members)
+    ++ intercalate "\n" (sepped . pprint <$> members)
