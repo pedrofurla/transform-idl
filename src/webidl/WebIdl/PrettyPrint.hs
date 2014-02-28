@@ -33,6 +33,8 @@ instance PrettyPrint Definition where
         "typdef " ++ pprint id' ++ " = " ++ pprint typ
     pprint (Implements id0 id1 ext) = 
         pprint id0 ++ " implements " ++ pprint id1
+    pprint (Enum id' members ext) =
+        pprint id' ++ " : " ++ (intercalate "," members)
 
 instance PrettyPrint Ident where
     pprint (Ident id') = id'
@@ -68,11 +70,14 @@ instance PrettyPrint IMember where
     pprint (Creator mid typ arg0 arg1) = error "TODO"
 
 instance PrettyPrint FormalArg where
-    pprint (FormalArg id' typ (Optional opt) default' ext) = 
+    pprint (RegularArg id' typ (Optional opt) default' ext) = 
         (if opt then "optional " else "")
         ++ (pprint typ ++ " ")
         ++ pprint id'
         ++ pprint default'
+    pprint (VariadicArg id' typ ext) = 
+        pprint typ ++ "... " 
+        ++ pprint id'
 
 instance PrettyPrint DictAttribute where
     pprint (DictAttribute id' typ default' ext) = 

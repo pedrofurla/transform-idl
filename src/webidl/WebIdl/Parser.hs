@@ -33,12 +33,12 @@ webIdl =
         process :: Parser [Definition]
         process = do 
             whites
-            many ( 
-                interface 
-                <|> callback 
-                <|> typeDef 
-                <|> dictionary
-                <|> implements) <?> "Top level defitinion"
+            many (try interface 
+                <|>try callback 
+                <|>try typeDef 
+                <|>try dictionary
+                <|>try implements
+                <|>try enum) <?> "Top level defitinion"
     in WebIdl <$> process
 
 implements :: Parser Definition
@@ -49,6 +49,16 @@ implements = do
     i1 <- identifier
     endl
     return $ Implements i0 i1 eatt
+
+enum :: Parser Definition
+enum = do
+    eatt <- extendedAtt
+    stringTok "enum"
+    i <- identifier
+    members <- inBraces $ ((\(Str s) -> s) <$>) <$> (sepBy stringLit $ charTok ',') 
+    endl 
+    --members  <- literals <$> (\(Str s) -> s)
+    return (Enum i members eatt) <?> "Enum definition"
 
 {- | 
 >>> run interface "[Constructor]\n interface SELF : SUPER {}"
@@ -65,7 +75,7 @@ interface = do
     stringTok "interface"
     i <- identifier
     inherits <- inheriting 
-    members <- inBraces $ 
+    members <-option [] $ inBraces $ 
         many (try attribute 
             <|> try operation 
             <|> try constVal
@@ -146,24 +156,32 @@ operation = do
     return (Operation ident typ args eatt) <?> "operation"
 
 formalArgs :: Parser [FormalArg]
-formalArgs = (inParens $ sepBy formalArg $ charTok ',') <?> "argument list"
+formalArgs = (inParens $ sepBy (try regularArg <|> try variadicArg) $ charTok ',') <?> "argument list"
+
+variadicArg :: Parser FormalArg
+variadicArg = do
+    eatt <- extendedAtt
+    typ <- parseType <?> "type of formal argument"
+    stringTok "..."
+    i <- identifier <?> "identifier of formal argument"
+    return (VariadicArg i typ eatt) <?> "variadic argument"
     
 {- |
->>> run formalArg "AudioBuffer decodedData"
+>>> run regularArg "AudioBuffer decodedData"
 FormalArg "AudioBuffer" "decodedData" Nothing
->>> run formalArg "optional Bleh bufferSize = 0"
+>>> run regularArg "optional Bleh bufferSize = 0"
 FormalArg "Bleh" "bufferSize" (Just (Number "0"))
->>> run formalArg "optional unsigned long bufferSize = \"aaa\""
+>>> run regularArg "optional unsigned long bufferSize = \"aaa\""
 FormalArg "unsigned long" "bufferSize" (Just (Str "aaa"))
 -}
-formalArg :: Parser FormalArg
-formalArg = do
+regularArg :: Parser FormalArg
+regularArg = do
     eatt <- extendedAtt
     opt <- optionMaybe $ stringTok "optional" --  opt :: Maybe String
     typ <- parseType <?> "type of formal argument"
     i <- identifier <?> "identifier of formal argument"
     df <- (id =<< ) <$> const (optionMaybe $ charTok '=' >>> value) `traverse` opt
-    return (FormalArg i typ (Optional $ justTrue opt) df eatt) <?> "argument"
+    return (RegularArg i typ (Optional $ justTrue opt) df eatt) <?> "argument"
 
 {- |
 >>> run attribute "readonly attribute TYPE NAME;"
@@ -194,13 +212,14 @@ setter = special2 "setter" Setter
 creator :: Parser IMember
 creator = special2 "creator" Creator
 
+{-| Special is how the above keywords are named in the WebIDL spec. -}
 special1 :: String -> (Maybe Ident -> Type -> FormalArg -> b) -> Parser b
 special1 tok cons = do
     _eatt <- extendedAtt
     stringTok tok
     typ <- parseType
     i   <- optionMaybe identifier
-    arg <- inParens formalArg
+    arg <- inParens regularArg
     endl
     return $ cons i typ arg
 
@@ -210,7 +229,7 @@ special2 tok cons = do
     stringTok tok
     typ <- parseType
     i   <- optionMaybe identifier
-    (arg0, arg1) <- inParens $ liftA2 (,) formalArg  formalArg
+    (arg0, arg1) <- inParens $ liftA2 (,) regularArg regularArg
     endl
     return $ cons i typ arg0 arg1
 

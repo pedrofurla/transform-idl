@@ -21,7 +21,9 @@ data Type     = Type Ident Nullable Array Sequence deriving (Show, Eq)
 
 type Default   = Maybe Literal
 data Optional  = Optional Bool deriving (Show, Eq)
-data FormalArg = FormalArg Ident Type Optional Default ExtendedAtt deriving (Show, Eq)
+data FormalArg = 
+      VariadicArg Ident Type ExtendedAtt
+    | RegularArg Ident Type Optional Default ExtendedAtt deriving (Show, Eq)
 
 --data Callback     = Callback Ident CallbackDef ExtendedAtt deriving (Show, Eq)
 data CallbackDef = CallbackDef Type [FormalArg] deriving (Show, Eq)
@@ -58,6 +60,7 @@ data Definition =
     | Dictionary Ident InheritsFrom [DictAttribute] ExtendedAtt  
     | TypeDef Ident Type ExtendedAtt 
     | Implements Ident Ident ExtendedAtt 
+    | Enum Ident [String] ExtendedAtt 
       deriving (Show,Eq)
 
 data Definitions = Definitions [Definition]
