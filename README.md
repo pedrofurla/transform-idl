@@ -17,3 +17,10 @@ Many parts of WebIdl are still not implemented:
 There are still *many* opportunities for abstractions/code-reuse that were simply ignored - check Parser.hs, Ast.hs and PrettyPrint.hs and you will see what I mean.
 
 Special thanks to [Tony Morris](http://blog.tmorris.net/) and [Mark Hibberd](https://twitter.com/markhibberd) which made this possible through their wonderful [FP Course](https://github.com/NICTA/course). Thank you guys, you are the best! And thanks NICTA for allowing they create such a wonderfull course.
+
+
+Useful links:
+
+ * [WebIdl W3C Candidate Recommendation](http://www.w3.org/TR/WebIDL/) dated 04/19/2012
+ * [WebIdl W3C Editor's Draft](http://heycam.github.io/webidl/) dated 02/11/2014
+ * [IDLs at Mozilla's VCS](http://mxr.mozilla.org/mozilla-central/source/dom/webidl/)
