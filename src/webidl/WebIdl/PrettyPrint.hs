@@ -19,8 +19,9 @@ instance PrettyPrint WebIdl where
         printMembers definitions
 
 instance PrettyPrint Definition where
-    pprint (Interface id' inherits members ext) = 
-        "interface " 
+    pprint (Interface id' inherits (Partial partial) members ext) = 
+        (if partial then "partial " else "")
+        ++ "interface " 
         ++ pprint id' ++ pprint inherits
         ++ printMembers members
     pprint (Callback id' _ _) = 

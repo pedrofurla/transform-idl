@@ -56,8 +56,11 @@ data DictAttribute = DictAttribute Ident Type Default ExtendedAtt deriving (Show
 
 --data WebIdl = WebIdl [Either Interface Callback] deriving (Show,Eq)
 
+data Partial = Partial Bool deriving (Show,Eq)
+
 data Definition =  
-    Interface Ident InheritsFrom [IMember] ExtendedAtt
+    -- TODO: consider if partial interface should have its own type
+    Interface Ident InheritsFrom Partial [IMember] ExtendedAtt
     | Callback Ident CallbackDef ExtendedAtt
     | Dictionary Ident InheritsFrom [DictAttribute] ExtendedAtt  
     | TypeDef Ident Type ExtendedAtt 

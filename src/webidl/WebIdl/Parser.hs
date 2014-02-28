@@ -72,6 +72,7 @@ Interface "IFACE" "Constructor" (Just "SUPER") [Attribute "ATT_TYP1" "ATT1" True
 interface :: Parser Definition 
 interface = do
     eatt <- extendedAtt
+    partial <- optionMaybe $ stringTok "partial"
     stringTok "interface"
     i <- identifier
     inherits <- inheriting 
@@ -84,14 +85,15 @@ interface = do
             <|> try creator
             <|> try deleter)
     endl
-    return (Interface i inherits members eatt) <?> "Interface definition"
+    return (Interface i inherits (Partial . justTrue $ partial) members eatt) <?> "Interface definition"
 
 {- |
-    TODO: any thing after ":" can be a type parsed by "parseType", this is wrong. 
+    TODO: any thing after ":" can be a type parsed by "parseType", this is wrong, 
+    eg. `unsigned long long` can't be inherited
 -}
 inheriting :: Parser (Maybe Type)
 inheriting = do 
-        optional $ charTok ':'
+        optional $ charTok ':' -- TODO this is wrong. if ":" is present the "type" is obligatory
         optionMaybe parseType
 
 {- |
