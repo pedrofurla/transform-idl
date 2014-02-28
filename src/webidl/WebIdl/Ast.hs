@@ -22,6 +22,8 @@ data Type     = Type Ident Nullable Array Sequence deriving (Show, Eq)
 type Default   = Maybe Literal
 data Optional  = Optional Bool deriving (Show, Eq)
 data FormalArg = 
+    -- TODO Notice that variadic arguments are only allowed to be in the end of the argument list
+    -- so better create an ArgumentList [RegularArg] (Maybe VariadicArg)
       VariadicArg Ident Type ExtendedAtt
     | RegularArg Ident Type Optional Default ExtendedAtt deriving (Show, Eq)
 
