@@ -1,13 +1,12 @@
 
 module WebIdl.Lex where
 
+import WebIdl.Literal
 import WebIdl.Helper
 
 import GHC.Exts(sortWith)
--- import Data.Traversable
 import Control.Applicative((<$>))
 import Control.Monad(liftM)
--- import Data.Maybe(fromMaybe)
 
 import Text.Parsec.Char
 import Text.Parsec.Combinator
@@ -50,12 +49,6 @@ identTok = skipWhites $ do
 
 parseCTypes :: Parser String
 parseCTypes = skipWhites $ choice $ (try . string) <$> sortWith ((100-) . length) cTypes
-
-data Literal = 
-      Number String
-    | Hex String
-    | Str String 
-    | Boolean String deriving (Show, Eq)
 
 value :: Parser Literal
 value =  try hexLit <|> numberLit <|> stringLit <|> boolLit

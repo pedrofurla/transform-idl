@@ -3,6 +3,7 @@ module WebIdl.Parser where
 -- import WebIdl
 import WebIdl.Ast
 import WebIdl.Lex
+import WebIdl.Literal
 import WebIdl.Helper
 
 -- import GHC.Exts(sortWith)

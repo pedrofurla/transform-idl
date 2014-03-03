@@ -51,7 +51,7 @@ library
                       WebIdl.PrettyPrint
 
   build-depends:       containers, base ==4.6.*, parsec3,
-                       QuickCheck >= 2.0, doctest >= 0.9.7
+                       QuickCheck >= 2.0, doctest >= 0.9.7, syb > 0.4.0
 
   hs-source-dirs:     src/webidl
 

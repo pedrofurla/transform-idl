@@ -1,34 +1,39 @@
+{-# LANGUAGE RankNTypes, DeriveDataTypeable #-}
+
 module WebIdl.Ast where
 
-import WebIdl.Lex
+import WebIdl.Literal
 
-data Ident = Ident String  deriving (Show, Eq)
+import Data.Typeable
+import Data.Data
+
+data Ident = Ident String  deriving (Show, Eq, Typeable, Data)
 
 data ExtendedAttributes = 
     NoInterfaceObject
     | OtherEA String
-      deriving (Show, Eq, Read)
+      deriving (Show, Eq, Read, Typeable, Data)
 
 -- | Extended Attribute
 data ExtendedAtt = 
     ExtendedAtt [ExtendedAttributes]
-      deriving (Show, Eq)
+      deriving (Show, Eq, Typeable, Data)
 
-data Nullable = Nullable Bool  deriving (Show, Eq)
-data Array    = Array Bool     deriving (Show, Eq)
-data Sequence = Sequence Bool  deriving (Show, Eq)
-data Type     = Type Ident Nullable Array Sequence deriving (Show, Eq)
+data Nullable = Nullable Bool  deriving (Show, Eq, Typeable, Data)
+data Array    = Array Bool     deriving (Show, Eq, Typeable, Data)
+data Sequence = Sequence Bool  deriving (Show, Eq, Typeable, Data)
+data Type     = Type Ident Nullable Array Sequence deriving (Show, Eq, Typeable, Data)
 
 type Default   = Maybe Literal
-data Optional  = Optional Bool deriving (Show, Eq)
+data Optional  = Optional Bool deriving (Show, Eq, Typeable, Data)
 data FormalArg = 
     -- TODO Notice that variadic arguments are only allowed to be in the end of the argument list
     -- so better create an ArgumentList [RegularArg] (Maybe VariadicArg)
       VariadicArg Ident Type ExtendedAtt
-    | RegularArg Ident Type Optional Default ExtendedAtt deriving (Show, Eq)
+    | RegularArg Ident Type Optional Default ExtendedAtt deriving (Show, Eq, Typeable, Data)
 
 --data Callback     = Callback Ident CallbackDef ExtendedAtt deriving (Show, Eq)
-data CallbackDef = CallbackDef Type [FormalArg] deriving (Show, Eq)
+data CallbackDef = CallbackDef Type [FormalArg] deriving (Show, Eq, Typeable, Data)
 
 --data TypeDef = TypeDef Ident Type ExtendedAtt deriving (Show, Eq)
      
@@ -36,8 +41,8 @@ type InheritsFrom = Maybe Type
 
 --data Interface = Interface Ident InheritsFrom [IMember] ExtendedAtt deriving (Show, Eq)
 
-data ReadOnly = ReadOnly Bool deriving (Show, Eq)
-data Inherit  = Inherit Bool  deriving (Show, Eq)
+data ReadOnly = ReadOnly Bool deriving (Show, Eq, Typeable, Data)
+data Inherit  = Inherit Bool  deriving (Show, Eq, Typeable, Data)
 data IMember  =
     Const Ident Type Literal ExtendedAtt 
     | Attribute Ident Type ReadOnly Inherit ExtendedAtt 
@@ -47,16 +52,16 @@ data IMember  =
     | Setter (Maybe Ident) Type FormalArg FormalArg -- specials http://www.w3.org/TR/WebIDL/#idl-indexed-properties. 
     | Deleter (Maybe Ident) Type FormalArg          -- this is crazy...
     | Creator (Maybe Ident) Type FormalArg FormalArg  
-        deriving (Show, Eq)
+        deriving (Show, Eq, Typeable, Data)
 
 --data Dictionary = Dictionary Ident InheritsFrom [DictAttribute] ExtendedAtt deriving (Show, Eq)
-data DictAttribute = DictAttribute Ident Type Default ExtendedAtt deriving (Show, Eq)
+data DictAttribute = DictAttribute Ident Type Default ExtendedAtt deriving (Show, Eq, Typeable, Data)
 
 -- data TopLevel = Callback | Interface | Const | TypeDef | Dictionary
 
 --data WebIdl = WebIdl [Either Interface Callback] deriving (Show,Eq)
 
-data Partial = Partial Bool deriving (Show,Eq)
+data Partial = Partial Bool deriving (Show,Eq, Typeable, Data)
 
 data Definition =  
     -- TODO: consider if partial interface should have its own type
@@ -66,9 +71,9 @@ data Definition =
     | TypeDef Ident Type ExtendedAtt 
     | Implements Ident Ident ExtendedAtt 
     | Enum Ident [String] ExtendedAtt 
-      deriving (Show,Eq)
+      deriving (Show,Eq, Typeable, Data)
 
 data Definitions = Definitions [Definition]
 
-data WebIdl = WebIdl [Definition] deriving (Show,Eq)
+data WebIdl = WebIdl [Definition] deriving (Show,Eq, Typeable, Data)
 
