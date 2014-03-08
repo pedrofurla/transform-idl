@@ -1,6 +1,10 @@
-{-# OPTIONS_GHC -fno-warn-unused-binds -fno-warn-unused-matches #-}
 {-# LANGUAGE TypeSynonymInstances, FlexibleInstances #-}
+{-# LANGUAGE ScopedTypeVariables #-}
+
 {- TODO temporary while not everything is handled -}
+{-# OPTIONS_GHC -fno-warn-unused-binds -fno-warn-unused-matches #-}
+
+
 
 module WebIdl.PrettyPrint where
 
@@ -89,6 +93,11 @@ instance PrettyPrint DictAttribute where
 instance PrettyPrint Default where
     pprint default' = fromMaybe "" $ (" = "++) . show <$> default'
 
+type List a = [a] -- TODO shouldn't lick out 
+instance PrettyPrint b => PrettyPrint (List b) where
+    -- pprint :: a -> String
+    pprint a = printMembers a -- concat (pprint <$> a)
+
 sep :: String
 sep = "\t"
 
@@ -102,3 +111,4 @@ printMembers :: PrettyPrint m => [m] -> String
 printMembers members = 
     (if null members then "" else "\n") 
     ++ intercalate "\n" (sepped . pprint <$> members)
+

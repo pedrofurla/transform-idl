@@ -16,7 +16,6 @@ pprintFile filename =  do
           Left x -> "Error: " ++ show x
           Right x -> x
     
-
 pprintWebGl :: IO String
 pprintWebGl = pprintFile "idl/webgl.idl"
 

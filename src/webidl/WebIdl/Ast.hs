@@ -32,14 +32,9 @@ data FormalArg =
       VariadicArg Ident Type ExtendedAtt
     | RegularArg Ident Type Optional Default ExtendedAtt deriving (Show, Eq, Typeable, Data)
 
---data Callback     = Callback Ident CallbackDef ExtendedAtt deriving (Show, Eq)
 data CallbackDef = CallbackDef Type [FormalArg] deriving (Show, Eq, Typeable, Data)
-
---data TypeDef = TypeDef Ident Type ExtendedAtt deriving (Show, Eq)
      
 type InheritsFrom = Maybe Type
-
---data Interface = Interface Ident InheritsFrom [IMember] ExtendedAtt deriving (Show, Eq)
 
 data ReadOnly = ReadOnly Bool deriving (Show, Eq, Typeable, Data)
 data Inherit  = Inherit Bool  deriving (Show, Eq, Typeable, Data)
@@ -47,21 +42,16 @@ data IMember  =
     Const Ident Type Literal ExtendedAtt 
     | Attribute Ident Type ReadOnly Inherit ExtendedAtt 
     | Operation Ident Type [FormalArg] ExtendedAtt -- TODO static - http://www.w3.org/TR/WebIDL/#idl-static-operations
-    -- these are know as "specials"
+    -- these are know as "specials" in the spec
     | Getter (Maybe Ident) Type FormalArg           -- getters and setters and other
     | Setter (Maybe Ident) Type FormalArg FormalArg -- specials http://www.w3.org/TR/WebIDL/#idl-indexed-properties. 
     | Deleter (Maybe Ident) Type FormalArg          -- this is crazy...
     | Creator (Maybe Ident) Type FormalArg FormalArg  
         deriving (Show, Eq, Typeable, Data)
 
---data Dictionary = Dictionary Ident InheritsFrom [DictAttribute] ExtendedAtt deriving (Show, Eq)
 data DictAttribute = DictAttribute Ident Type Default ExtendedAtt deriving (Show, Eq, Typeable, Data)
 
--- data TopLevel = Callback | Interface | Const | TypeDef | Dictionary
-
---data WebIdl = WebIdl [Either Interface Callback] deriving (Show,Eq)
-
-data Partial = Partial Bool deriving (Show,Eq, Typeable, Data)
+data Partial = Partial Bool deriving (Show, Eq, Typeable, Data)
 
 data Definition =  
     -- TODO: consider if partial interface should have its own type
@@ -71,9 +61,9 @@ data Definition =
     | TypeDef Ident Type ExtendedAtt 
     | Implements Ident Ident ExtendedAtt 
     | Enum Ident [String] ExtendedAtt 
-      deriving (Show,Eq, Typeable, Data)
+      deriving (Show, Eq, Typeable, Data)
 
 data Definitions = Definitions [Definition]
 
-data WebIdl = WebIdl [Definition] deriving (Show,Eq, Typeable, Data)
+data WebIdl = WebIdl [Definition] deriving (Show, Eq, Typeable, Data)
 
