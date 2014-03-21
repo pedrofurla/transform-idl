@@ -1,7 +1,5 @@
 An hand-written [WebIdl](http://www.w3.org/TR/WebIDL/) parser - using [Parsec3](http://hackage.haskell.org/package/parsec3).
 
-Status: it's currently possible to parte Mozilla's Window.idl after C pre-processing.
-
 The purpose of this project is to one day provide tools to transform WebIdl (maybe OMG's idl too?) into bindings/stubs for [altjs](altjs.org) languages. My main targets are Haskell based ones (like [Fay](http://fay-lang.org) and [PureScript](http://purescript.readthedocs.org/)) and [ScalaJs](http://www.scala-js.org/).
 
 The idl directory currently contains IDLs for [Web Audio](http://www.w3.org/TR/webaudio/) and [WebGL](http://www.khronos.org/registry/webgl/specs/latest/1.0/).
