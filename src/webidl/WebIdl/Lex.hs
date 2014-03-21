@@ -7,6 +7,7 @@ import WebIdl.Helper
 import GHC.Exts(sortWith)
 import Control.Applicative((<$>))
 import Control.Monad(liftM)
+import Data.Maybe(fromMaybe)
 
 import Text.Parsec.Char
 import Text.Parsec.Combinator
@@ -14,22 +15,55 @@ import Text.Parsec.String
 import Text.Parsec.Prim
 
 
+{-| Primitive types. ref http://heycam.github.io/webidl/#prod-PrimitiveType -}
 cTypes :: [String]
 cTypes = 
-    ["byte", "octet", "short", "unsigned short", "long", "unsigned long", 
-     "long long", "unsigned long long",
-     "boolean", "integer", "float", "unrestricted float", "double", "unrestricted double",
-     "void"
+    ["boolean", "byte", "octet", 
+     "short", "long", 
+     "integer", 
+     "float", "double", 
+     "long long", 
+     "unsigned short", "unsigned long", 
+     "unsigned long long",
+     "unrestricted float", "unrestricted double"
     ]
+
+{-cTypesParser =
+    let
+        prims = ["boolean", "byte", "octet"]
+        unsigs = ["short", "long", "long long"]
+        unres = ["float","double"]
+    in do
+        error ""-}
+
+{-| ref http://heycam.github.io/webidl/#proddef-NonAnyType  -}
+preDefinedTypes :: [String]
+preDefinedTypes = 
+    "DOMTimeStamp" : "DOMString" : "ByteString" : "Date" 
+    : "RegExp" : "object" : "void" : "any" : cTypes 
 
 noType :: String
 noType = "void"
 
 argKeywords :: [String]
 argKeywords =
-    ["attribute", "callback", "const", "creator", "deleter", "dictionary", "enum", 
+    ["attribute", "callback", "const", "creator", "deleter", "dictionary", "enum", "null", 
      "exception", "getter", "implements", "inherit", "interface", "legacycaller", "partial", 
      "setter", "static", "stringifier", "typedef", "unrestricted"]
+
+longestTok :: String -> Parser String
+longestTok s = try (do{ string s; notFollowedBy (alphaNum <|> char '_'); return s}) 
+--cToks = cTypes <$>> words
+
+-- TODO rename to parsePredefinedTypes
+-- TODO solution to "try . stringTok" and sorting would be to consume everything until a non valid char is found, but then there are spaces in C types.
+-- or I can break spaces in them and try to consume bit by bit. This last one seems to be the sensible option (it smells Applicative).
+parseCTypes :: Parser String 
+parseCTypes = 
+    skipWhites $ 
+    choice     $ 
+    (try . longestTok) <$> sortWith ((100-) . length) preDefinedTypes
+
 
 keywords :: [String]
 keywords =  concat (words <$> cTypes) ++ argKeywords 
@@ -37,21 +71,23 @@ keywords =  concat (words <$> cTypes) ++ argKeywords
 isKeyword :: String -> Bool
 isKeyword = (`elem` keywords)
 
+identHead :: Parser Char
+identHead = letter <|> char '_'
+
+identTail :: Parser Char
+identTail = identHead <|> digit
+
 identTok :: Parser String
 identTok = skipWhites $ do
-    x <- letter <|> char '_'
-    xs <-  many $ letter <|> char '_' <|> digit
-    -- TODO: relexing reserved keyword checking, it's conflicting with types (which are also identfiers)
-    -- let i = x : xs
-    -- if isKeyword i then parserFail $ "`"++i++"` is a reserved word"
-    -- else 
-    return $ x : xs
-
-parseCTypes :: Parser String
-parseCTypes = skipWhites $ choice $ (try . string) <$> sortWith ((100-) . length) cTypes
-
+    x <- identHead
+    xs <-  many identTail
+    let i = x : xs
+    --if isKeyword i then parserFail $ "`"++i++"` is a reserved word"
+    --else 
+    return i        
+    
 value :: Parser Literal
-value =  try hexLit <|> numberLit <|> stringLit <|> boolLit
+value =  try hexLit <|> numberLit <|> stringLit <|> boolLit <|> (stringTok "null" <$>> const Null)
 
 stringLit :: Parser Literal
 stringLit = 
@@ -62,9 +98,10 @@ stringLit =
 
 numberLit :: Parser Literal
 numberLit = do
+    neg <- optionMaybe $ stringTok "-"
     ls <- many1 digit
     rs <- option "" (char '.' >>> (('.':) <$> many1 digit))
-    return $ Number $ ls ++ rs
+    return $ Number $ fromMaybe "" neg ++ ls ++ rs
     
 hexLit :: Parser Literal
 hexLit = liftM Hex (string "0x" >>> many1 hexDigit)
@@ -89,6 +126,19 @@ charTok = skipWhites . char
 
 stringTok :: String -> Parser String
 stringTok = skipWhites . string
+    {-skipWhites $ do
+    r <- string s
+    notFollowedBy identTail
+    return r-}
+
+
+{-| Attempt to parse `p`, giving s if succeeds or f if fails -}
+parsePostfixKeyword :: a -> a -> Parser b -> Parser a
+parsePostfixKeyword s f p = option f (p >>> return s)
+
+{-| Same as `parsePostfixKeyword` but using `True` and `False` for success and failure respectively -}
+parsePostfixBool :: Parser b -> Parser Bool
+parsePostfixBool p = option False (p >>> return True)
 
 -- | Reads a sequence of any non-visible " \t\n\r" characteres and comments
 whites :: Parser ()

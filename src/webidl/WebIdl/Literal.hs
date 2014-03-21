@@ -9,4 +9,5 @@ data Literal =
       Number String
     | Hex String
     | Str String 
-    | Boolean String deriving (Show, Eq, Typeable, Data)
+    | Null
+    | Boolean String deriving (Show, Eq, Ord, Typeable, Data)

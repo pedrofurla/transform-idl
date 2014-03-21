@@ -49,31 +49,35 @@ library
                       WebIdl.Helper
                       WebIdl.Demo
                       WebIdl.PrettyPrint
+                      WebIdl.Query
+                      WebIdl.Process
+                      WebIdl.Mozilla
 
   build-depends:       containers, base ==4.6.*, parsec3,
-                       QuickCheck >= 2.0, doctest >= 0.9.7, syb > 0.4.0
+                       QuickCheck >= 2.0, doctest >= 0.9.7, syb == 0.4.0,
+                       cpphs >= 1.18
 
   hs-source-dirs:     src/webidl
 
   default-language:   Haskell2010
 
-test-suite            doctests
-  type:               exitcode-stdio-1.0
-  -- type:               detailed-0.9
+-- test-suite            doctests
+--   type:               exitcode-stdio-1.0
+--   -- type:               detailed-0.9
 
-  main-is:            doctests.hs
+-- main-is:            doctests.hs
 
-  default-language:   Haskell2010
+-- default-language:   Haskell2010
 
-  build-depends:      base < 5 && >= 3
-                      , doctest >= 0.9.7
-                      , filepath >= 1.3
-                      , directory >= 1.1
-                      , QuickCheck >= 2.0
-                      , parsec3
+-- build-depends:      base < 5 && >= 3
+--                     , doctest >= 0.9.7
+--                     , filepath >= 1.3
+--                     , directory >= 1.1
+--                     , QuickCheck >= 2.0
+--                     , parsec3
 
-  ghc-options:
-                      -Wall
-                      -threaded
+-- ghc-options:
+--                     -Wall
+--                     -threaded
 
-  hs-source-dirs:     src/test
+-- hs-source-dirs:     src/test

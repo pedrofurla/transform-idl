@@ -5,3 +5,19 @@
 :set -fno-warn-unused-imports
 :set -fno-warn-type-defaults
 :set -XUnicodeSyntax
+
+import Text.Parsec.Prim
+import Text.Parsec.Char       
+import Text.Parsec.Combinator 
+import Text.Parsec.String     
+import Text.Parsec.Prim  
+
+import Data.Generics     
+import Data.Maybe
+import Data.Traversable hiding (sequence)
+
+import qualified Data.Map.Lazy      as M
+import qualified Data.Set           as S
+import qualified Data.List          as L
+import Data.Char(toLower)
+import Control.Applicative hiding (Const, optional, (<|>))

@@ -11,7 +11,7 @@ main :: IO ()
 main = do 
     args <- getArgs
     progName <- getProgName
-    let maybeEffect = (\(u,p) -> write p $ w3cIdl u) `fmap` (processArgs args)
+    let maybeEffect = (\(u,p) -> write p $ w3cIdl u) `fmap` processArgs args
     fromMaybe (putStrLn $ progName ++ " <url> [<output-path>] # default output path is 'idl/'") maybeEffect
         
 
@@ -23,12 +23,11 @@ processArgs (u : p : _) = Just (u,if last p == '/' then p else p ++ "/")
 defaultOutputPath = "idl/"
 defaultUrl = "http://www.w3.org/TR/webaudio/"
 
-w3cIdl :: [Char] -> IO [(String, String)]
-w3cIdl url = do
-    let doc = fromUrl url
-    idls <- runX $ doc 
-        >>> css "code.idl-code" >>> hasAttr "id" >>> ( (getAttrValue "id") &&& (multi getText >. concat)  ) 
-    return  idls
+w3cIdl :: String -> IO [(String, String)]
+w3cIdl url = 
+    let doc = fromUrl url in
+    runX $ doc >>> css "code.idl-code" >>> hasAttr "id" >>> ( getAttrValue "id" &&& (multi getText >. concat)  ) 
+    
 
 webAudio:: IO [(String,String)]
 webAudio = w3cIdl defaultUrl

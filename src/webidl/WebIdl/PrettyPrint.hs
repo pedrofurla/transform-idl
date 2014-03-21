@@ -4,12 +4,11 @@
 {- TODO temporary while not everything is handled -}
 {-# OPTIONS_GHC -fno-warn-unused-binds -fno-warn-unused-matches #-}
 
-
-
 module WebIdl.PrettyPrint where
 
 import WebIdl.Ast
 import WebIdl.Lex()
+import WebIdl.Literal
 
 import Control.Applicative((<$>))
 import Data.List(intercalate)
@@ -17,16 +16,23 @@ import Data.Maybe(fromMaybe)
 
 class PrettyPrint a where
     pprint :: a -> String
+    pprintShallow :: a -> String
+    pprintShallow = pprint 
 
 instance PrettyPrint WebIdl where
     pprint (WebIdl definitions) = 
         printMembers definitions
+    pprintShallow _ = ""
 
 instance PrettyPrint Definition where
-    pprint (Interface id' inherits (Partial partial) members ext) = 
-        (if partial then "partial " else "")
-        ++ "interface " 
-        ++ pprint id' ++ pprint inherits
+    pprint (Interface id' inherits members ext) = 
+        "interface " 
+        ++ pprint id' 
+        ++ fromMaybe "" (((" : "++) . pprint) <$> inherits)
+        ++ printMembers members
+    pprint (PartialInterface id' members ext) = 
+        "partial interface " 
+        ++ pprint id'
         ++ printMembers members
     pprint (Callback id' _ _) = 
         "callback " ++ pprint id'
@@ -39,64 +45,106 @@ instance PrettyPrint Definition where
     pprint (Implements id0 id1 ext) = 
         pprint id0 ++ " implements " ++ pprint id1
     pprint (Enum id' members ext) =
-        pprint id' ++ " : " ++ (intercalate "," members)
+        pprint id' ++ " : " ++ intercalate "," (show <$> members)
+
+    pprintShallow (Interface id' inherits _ ext) =
+        pprint (Interface id' inherits [] ext)
+    pprintShallow (PartialInterface id' _ ext) =
+        pprint (PartialInterface id' [] ext)
+    pprintShallow (Dictionary id' inherits members ext) = 
+        pprint (Dictionary id' inherits [] ext) 
+    pprintShallow x = pprint x
 
 instance PrettyPrint Ident where
     pprint (Ident id') = id'
 
 instance PrettyPrint Type where
-    pprint (Type id' (Nullable null') (Array array) (Sequence sequ)) = 
-        emptyIf (not sequ) "sequence<"
-        ++ pprint id'
+    pprint (Type id' (Nullable null') (Array array)) = 
+        --emptyIf (not sequ) "sequence<"
+        pprint id'
         ++ emptyIf (not array) "[]"
         ++ emptyIf (not null') "?"
-        ++ emptyIf (not sequ) ">"
+        ++ " "
+        -- ++ emptyIf (not sequ) ">"
+    pprint (Union ts (Nullable nul) (Array array)) =
+        "("
+        ++ intercalate " or " (pprint <$> ts)
+        ++ ")"
+        ++ emptyIf (not array) "[]"
+        ++ emptyIf (not nul) "?"
+        ++ " "
+    pprint (Sequence t (Nullable nul)) =
+        "sequence <" 
+        ++ pprint t 
+        ++ ">"
+        ++ emptyIf (not nul) "?"
+        ++ " "
 
-instance PrettyPrint InheritsFrom where
-    pprint maybeType = fromMaybe "" $ ((" : "++) . pprint) <$> maybeType
+-- instance PrettyPrint InheritsFrom where
+--    pprint maybeType = fromMaybe "" $ ((" : "++) . pprint) <$> maybeType
 
 instance PrettyPrint IMember where
     pprint (Const id' typ lit ext) = 
         "const "
-        ++ pprint typ ++ " "
-        ++ pprint id' ++ " = "
+        ++ pprint typ
+        ++ pprint id' ++ "= "
         ++ show lit
     pprint (Attribute id' typ ro inherits ext) =
         "attribute "
-        ++ pprint typ ++ " "
+        ++ pprint typ
         ++ pprint id' 
     pprint (Operation id' typ args ext) = 
-        pprint typ ++ " "
+        pprint typ
         ++ pprint id' ++ "("
         ++ intercalate ", " (pprint <$> args) ++ ")"
-    pprint (Getter mid typ arg)        = error "TODO"
-    pprint (Setter mid typ arg0 arg1)  = error "TODO"
-    pprint (Deleter mid typ arg)       = error "TODO"
-    pprint (Creator mid typ arg0 arg1) = error "TODO"
+    pprint (Getter mid typ arg _)        = 
+        "getter "
+        ++ pprint mid
+        ++ pprint arg
+    pprint (Setter mid typ arg0 arg1 _)  = 
+        "setter "
+        ++ pprint mid
+        ++ pprint arg0 ++ pprint arg1
+    pprint (Deleter mid typ arg _)       = 
+        "deleter "
+        ++ pprint mid
+        ++ pprint arg
+    {-pprint (Creator mid typ arg0 arg1) = 
+        "creator "
+        ++ (maybe "" pprint mid) ++ " "
+        ++ pprint arg0 ++ pprint arg1-}
+    pprint (IComment str) = "--" ++ str
+
 
 instance PrettyPrint FormalArg where
     pprint (RegularArg id' typ (Optional opt) default' ext) = 
         (if opt then "optional " else "")
-        ++ (pprint typ ++ " ")
+        ++ pprint typ 
         ++ pprint id'
-        ++ pprint default'
+        ++ pprintDefault default'
     pprint (VariadicArg id' typ ext) = 
         pprint typ ++ "... " 
         ++ pprint id'
 
 instance PrettyPrint DictAttribute where
     pprint (DictAttribute id' typ default' ext) = 
-        pprint typ ++ " "
+        pprint typ 
         ++ pprint id'
-        ++ pprint default'
+        ++ pprintDefault default'
 
 instance PrettyPrint Default where
-    pprint default' = fromMaybe "" $ (" = "++) . show <$> default'
+    pprint default' = fromMaybe "" $ ("= "++) . show <$> default'
 
-type List a = [a] -- TODO shouldn't lick out 
-instance PrettyPrint b => PrettyPrint (List b) where
+instance PrettyPrint b => PrettyPrint [b] where
     -- pprint :: a -> String
-    pprint a = printMembers a -- concat (pprint <$> a)
+    pprint = printMembers -- concat (pprint <$> a)
+    pprintShallow  = intercalate "\n" . map pprintShallow 
+
+instance PrettyPrint b => PrettyPrint (Maybe b) where
+    pprint = maybe "" pprint
+
+pprintDefault :: Maybe Literal -> String
+pprintDefault  = fromMaybe "" . (("= "++) . show <$>) -- default'
 
 sep :: String
 sep = "\t"
