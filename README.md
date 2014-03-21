@@ -20,6 +20,13 @@ Most of WebIdl is already implemented, some missing parts:
 
 There are still *many* opportunities for abstractions/code-reuse that were simply ignored - check Parser/*, Ast.hs and PrettyPrint.hs and you will see what I mean. The look-aheads in the parser is also bugging me, but I am starting to get convinced that they are inevitables if I want to keep single parsing functions for each AST construct - WebIDL had a less ambiguous grammar would certainly help.
 
+Imeditate TODOs:
+
+  * Add source locations of each top-level element.
+  * Parse each file individually instead of off all the them in huge concatenated file
+  * A prototype of a stubs for Scala.js
+  * Maybe a nice html cross ref (will certainly be better than the pretty print)
+
 -------------
 
 Special thanks to [Tony Morris](http://blog.tmorris.net/) and [Mark Hibberd](https://twitter.com/markhibberd) which made this possible through their wonderful [FP Course](https://github.com/NICTA/course). Thank you guys, you are the best! And thanks NICTA for allowing they create such a wonderfull course.
