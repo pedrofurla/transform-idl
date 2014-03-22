@@ -4,6 +4,7 @@ module WebIdl.Ast where
 
 import WebIdl.Literal
 
+import Text.Parsec.Pos
 import Data.Typeable
 import Data.Data
 
@@ -72,13 +73,13 @@ data Partial = Partial Bool deriving (Show, Eq, Ord, Typeable, Data)
 
 {-| Top level defintions. All of them are considered to be types, except for `Implements` -}
 data Definition =  
-    Interface Ident InheritsFrom [IMember] EAs
-    | PartialInterface Ident [IMember] EAs -- http://heycam.github.io/webidl/#dfn-partial-interface
-    | Callback Ident CallbackDef EAs
-    | Dictionary Ident InheritsFrom [DictAttribute] EAs  
-    | TypeDef Ident Type EAs 
-    | Implements Ident Ident EAs 
-    | Enum Ident [String] EAs 
+    Interface Ident InheritsFrom [IMember] EAs SourcePos
+    | PartialInterface Ident [IMember] EAs SourcePos-- http://heycam.github.io/webidl/#dfn-partial-interface
+    | Callback Ident CallbackDef EAs SourcePos
+    | Dictionary Ident InheritsFrom [DictAttribute] EAs SourcePos
+    | TypeDef Ident Type EAs SourcePos 
+    | Implements Ident Ident EAs SourcePos 
+    | Enum Ident [String] EAs SourcePos 
     -- as per http://heycam.github.io/webidl/#dfn-partial-interface editor's draft there is also `callback interfaces`
       deriving (Show, Eq, Ord, Typeable, Data)
 

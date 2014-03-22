@@ -27,7 +27,7 @@ looseTypes ds =
 
 {-| The original should always be the interface on the right. TODO this "rule" doesn't look good -}
 mergeInterfaces :: Definition -> Definition -> Definition
-mergeInterfaces (Interface (Ident pname) _ pms _) (Interface i inh ms atts) = 
+mergeInterfaces (Interface (Ident pname) _ pms _ _) (Interface i inh ms atts pos) = 
     Interface i inh (
         concat [
             [IComment $ "merged partial interface "++pname],
@@ -35,9 +35,9 @@ mergeInterfaces (Interface (Ident pname) _ pms _) (Interface i inh ms atts) =
             [IComment $ "from partial interface "++pname],  
             pms, 
             [IComment $ "end partial interface "++pname]]
-    ) atts
-mergeInterfaces i@(Interface{}) (PartialInterface p@_ pms@_ atts@_) = mergeInterfaces (Interface p Nothing pms atts) i
-mergeInterfaces (PartialInterface p@_ pms@_ atts@_) i@(Interface{}) = mergeInterfaces (Interface p Nothing pms atts) i
+    ) atts pos
+mergeInterfaces i@(Interface{}) (PartialInterface p@_ pms@_ atts@_ pos) = mergeInterfaces (Interface p Nothing pms atts pos) i
+mergeInterfaces (PartialInterface p@_ pms@_ atts@_ pos) i@(Interface{}) = mergeInterfaces (Interface p Nothing pms atts pos) i
 mergeInterfaces a b = error $ "Can't merge a non interfaces: `" ++ getName a ++ "` and `" ++ getName b ++ "` "
 
 {- 
@@ -48,7 +48,7 @@ mergeInterfaces a b = error $ "Can't merge a non interfaces: `" ++ getName a ++ 
 -}
 
 processPartial :: Definition -> Global -> Global
-processPartial p@(PartialInterface (Ident i) _ _) m =  
+processPartial p@(PartialInterface (Ident i) _ _ _) m =  
     M.alter (
         Just . maybe 
             (error $ "Partial interface without an interface "++i)
@@ -57,7 +57,7 @@ processPartial p@(PartialInterface (Ident i) _ _) m =
 processPartial d _ = error $ "It got be a interface or a partial interface " ++ getName d-- Nothing        
 
 processImplements :: (String -> Bool) -> Definition -> Global -> Global
-processImplements ignores (Implements (Ident l) (Ident r) _) m = 
+processImplements ignores (Implements (Ident l) (Ident r) _ _) m = 
     let
         err = error . (++) "Missing interface in implements declaration: " 
         ri = fromMaybe (err r) $ M.lookup r m

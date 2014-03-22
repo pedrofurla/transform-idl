@@ -1,3 +1,4 @@
+
 {-# LANGUAGE TypeSynonymInstances, FlexibleInstances #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 
@@ -25,34 +26,34 @@ instance PrettyPrint WebIdl where
     pprintShallow _ = ""
 
 instance PrettyPrint Definition where
-    pprint (Interface id' inherits members ext) = 
+    pprint (Interface id' inherits members ext _) = 
         "interface " 
         ++ pprint id' 
         ++ fromMaybe "" (((" : "++) . pprint) <$> inherits)
         ++ printMembers members
-    pprint (PartialInterface id' members ext) = 
+    pprint (PartialInterface id' members ext _) = 
         "partial interface " 
         ++ pprint id'
         ++ printMembers members
-    pprint (Callback id' _ _) = 
+    pprint (Callback id' _ _ _) = 
         "callback " ++ pprint id'
-    pprint (Dictionary id' inherits members ext) = 
+    pprint (Dictionary id' inherits members ext _) = 
         "dict " 
         ++ pprint id' ++ pprint inherits
         ++ printMembers members
-    pprint (TypeDef id' typ _) = 
+    pprint (TypeDef id' typ _ _) = 
         "typdef " ++ pprint id' ++ " = " ++ pprint typ
-    pprint (Implements id0 id1 ext) = 
+    pprint (Implements id0 id1 ext _) = 
         pprint id0 ++ " implements " ++ pprint id1
-    pprint (Enum id' members ext) =
+    pprint (Enum id' members ext _) =
         pprint id' ++ " : " ++ intercalate "," (show <$> members)
 
-    pprintShallow (Interface id' inherits _ ext) =
-        pprint (Interface id' inherits [] ext)
-    pprintShallow (PartialInterface id' _ ext) =
-        pprint (PartialInterface id' [] ext)
-    pprintShallow (Dictionary id' inherits members ext) = 
-        pprint (Dictionary id' inherits [] ext) 
+    pprintShallow (Interface id' inherits _ ext pos) =
+        pprint (Interface id' inherits [] ext pos)
+    pprintShallow (PartialInterface id' _ ext pos) =
+        pprint (PartialInterface id' [] ext pos)
+    pprintShallow (Dictionary id' inherits members ext pos) = 
+        pprint (Dictionary id' inherits [] ext pos) 
     pprintShallow x = pprint x
 
 instance PrettyPrint Ident where

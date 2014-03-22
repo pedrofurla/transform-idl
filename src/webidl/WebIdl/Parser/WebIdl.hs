@@ -18,6 +18,7 @@ import Control.Applicative((<$>))
 import Text.Parsec.Combinator
 import Text.Parsec.String
 import Text.Parsec.Prim
+import Text.Parsec.Pos
 
 {-
 TODO there is still many opportunities to better abstract over many things these parsers do, for example:
@@ -26,7 +27,7 @@ TODO there is still many opportunities to better abstract over many things these
 - Perhaps even implement an IDL parser based on these abstractions
 -}
 
-type Def = EAs -> Definition
+type Def = EAs -> SourcePos -> Definition
 
 webIdl :: Parser WebIdl
 webIdl = 
@@ -38,7 +39,8 @@ webIdl =
                 do
                     eatt <- extendedAttributes 
                     def <- anyDefinition
-                    return $ def eatt
+                    pos <- getPosition
+                    return $ def eatt pos
                 ) <?> "Top level defitinion"
             eof
             return defs

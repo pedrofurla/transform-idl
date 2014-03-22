@@ -88,7 +88,7 @@ isImplementsG :: (Typeable a, Data a) => a -> Bool
 isImplementsG = False `mkQ` isImplements
 
 isEmptyIface :: Definition -> Bool
-isEmptyIface (Interface _ _ [] _) = True
+isEmptyIface (Interface _ _ [] _ _) = True
 isEmptyIface _ = False
 
 type IsA a = Typeable a => a -> Bool
