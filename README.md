@@ -29,6 +29,15 @@ There are still *many* opportunities for abstractions/code-reuse that were simpl
 
 -------------
 
+# Quick usage guide
+
+```
+$ cabal configure
+$ cabal repl
+>> pprintWebGl -- this will pretty print the WebGL api (not in WebIdl, in something more... digestable)
+```
+
+
 Special thanks to [Tony Morris](http://blog.tmorris.net/) and [Mark Hibberd](https://twitter.com/markhibberd) which made this possible through their wonderful [FP Course](https://github.com/NICTA/course). Thank you guys, you are the best! And thanks NICTA for allowing they create such a wonderfull course.
 
 Useful links:
